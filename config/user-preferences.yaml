@@ -1,0 +1,19 @@
+version: 1
+candidate: { timezone: Asia/Karachi }
+location_policy:
+  islamabad: { allowed_work_modes: [onsite, hybrid, remote] }
+  elsewhere: { allowed_work_modes: [remote], remote_must_be_explicit: true }
+verification_policy:
+  require_verified_open: true
+  reject_closed_or_removed: true
+  reject_expired_deadlines: true
+  prefer_official_career_pages: true
+  deduplicate: true
+career_tracks:
+  business_analysis_product:
+    role_keywords: [Business Analyst, Senior Business Analyst, Technical Business Analyst, Product Analyst, Product Owner, Business Process Analyst, Digital Transformation, Process Improvement, AI Workflow Analyst, Business Research Analyst]
+    skills: [requirements elicitation, stakeholder management, SDLC, BRD, FRD, user stories, acceptance criteria, UAT, process mapping, Agile, SQL, Python, automation, dashboards]
+  communications:
+    role_keywords: [Communications Manager, Digital Communications Lead, Strategic Communications, Knowledge Management, Change Management, Internal Communications, Stakeholder Engagement, Communications Lead]
+    skills: [communications strategy, stakeholder engagement, media relations, crisis communications, content strategy, digital campaigns, newsletters, knowledge management]
+preferred_industries: [Healthcare, Development, United Nations, INGO, NGO, Technology, Telecommunications, Education, Public Sector, Consulting, AI, Data]

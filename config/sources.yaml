@@ -1,0 +1,28 @@
+version: 1
+policy:
+  prefer_official_career_pages: true
+  require_active_status_verification: true
+  preserve_mirror_links_after_official_link: true
+sources:
+  - { name: LinkedIn, url: "https://www.linkedin.com/jobs/", category: job_board, enabled: true }
+  - { name: Indeed Pakistan, url: "https://pk.indeed.com/", category: job_board, enabled: true }
+  - { name: BeBee Pakistan, url: "https://bebee.com/pk", category: job_board, enabled: true }
+  - { name: Taraki Jobs, url: "https://jobs.taraki.co/", category: job_board, enabled: true }
+  - { name: BrightSpyre, url: "https://www.brightspyre.com/", category: job_board, enabled: true }
+  - { name: Rozee.pk, url: "https://www.rozee.pk/", category: job_board, enabled: true }
+  - { name: Mustakbil, url: "https://www.mustakbil.com/jobs/pakistan", category: job_board, enabled: true }
+  - { name: NSTP Jobs, url: "https://nstp.pk/jobs", category: job_board, enabled: true }
+  - { name: ReliefWeb, url: "https://reliefweb.int/jobs", category: international_development, enabled: true }
+  - { name: Devex, url: "https://www.devex.com/jobs", category: international_development, enabled: true }
+  - name: UN agencies
+    url: https://careers.un.org/
+    category: official_employers
+    enabled: true
+    notes: Check agency portals including UNDP, UNICEF, WHO, UNFPA, WFP, IOM, UN Women, FAO, UNESCO, and UNOPS.
+  - { name: Embassies and High Commissions in Pakistan, category: official_employers, enabled: true, notes: Check official Pakistan mission career pages only. }
+  - { name: Pakistani telecoms, category: official_employers, enabled: true, notes: Check Jazz, Zong, Telenor Pakistan, Ufone/PTCL, Nayatel, JazzCash, and Easypaisa official careers pages. }
+  - { name: AKDN organizations, category: official_employers, enabled: true }
+  - { name: Major NGOs and INGOs, category: official_employers, enabled: true }
+  - { name: Greenhouse, url: "https://www.greenhouse.io/", category: applicant_tracking_system, enabled: true }
+  - { name: Lever, url: "https://www.lever.co/", category: applicant_tracking_system, enabled: true }
+  - { name: Ashby, url: "https://www.ashbyhq.com/", category: applicant_tracking_system, enabled: true }

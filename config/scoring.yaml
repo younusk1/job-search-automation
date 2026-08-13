@@ -1,0 +1,13 @@
+version: 1
+weights:
+  role_match: 35
+  skills_match: 25
+  industry_match: 15
+  location_and_work_mode: 10
+  employer_quality: 10
+  ai_or_data_relevance: 5
+thresholds: { high: 80, medium: 60, low: 40 }
+rules:
+  active_status_is_a_hard_gate: true
+  location_eligibility_is_a_hard_gate: true
+  maximum_score: 100
