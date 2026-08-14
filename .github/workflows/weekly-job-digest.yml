@@ -1,0 +1,37 @@
+name: Weekly job digest
+
+on:
+  schedule:
+    # 03:00 UTC = 08:00 Asia/Karachi (Pakistan has no DST).
+    - cron: "0 3 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Collect Pakistan-first candidate leads
+        env:
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+        run: python collect_jobs.py
+      - name: Generate and send digest
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          JOB_DIGEST_TO: ${{ secrets.JOB_DIGEST_TO }}
+          JOB_DIGEST_FROM: ${{ secrets.JOB_DIGEST_FROM }}
+        run: python job_digest.py
+      - name: Upload generated digest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-job-digest
+          path: data/
+          if-no-files-found: ignore
