@@ -20,8 +20,10 @@ jobs:
           python-version: "3.12"
       - name: Collect Pakistan-first candidate leads
         env:
-          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+          JOB_SOURCE_FEEDS: ${{ vars.JOB_SOURCE_FEEDS }}
         run: python collect_jobs.py
+      - name: Verify official vacancy pages
+        run: python verify_jobs.py
       - name: Generate and send digest
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}

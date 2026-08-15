@@ -4,7 +4,7 @@
 Find roles from configured sources, normalize them, verify they are open, deduplicate them, and pass them to Job Intelligence.
 
 ## Run boundary
-Run only inside the single Wednesday Azure Timer invocation. Do not poll, loop, or remain active after returning.
+Run only inside the single Wednesday GitHub Actions run. Do not poll, loop, or remain active after returning.
 
 ## Inputs
 - `config/sources.yaml`

@@ -1,85 +1,77 @@
-"""Pakistan-first job lead collector for the weekly GitHub Actions run.
+"""Collect leads from source-approved RSS/Atom feeds only.
 
-This collector deliberately produces *leads*, not verified jobs. A lead must be
-checked against its official vacancy page before it can be copied into
-``data/input-jobs.json`` and become eligible for the email digest.
+Feed URLs are supplied through the ``JOB_SOURCE_FEEDS`` GitHub Actions variable
+as a JSON list: [{"name": "BrightSpyre", "url": "https://..."}]. This avoids
+general web search and does not scrape job boards. Add a feed only after the
+source has made it available to the account or approved its use.
 """
 from __future__ import annotations
 
 import json
 import os
-import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
-
-# Pakistan and Islamabad sources are searched before global remote-only sources.
-# Domain-less official-employer groups are intentionally queried broadly, then
-# verified against their official career page by the verification stage.
-SOURCE_GROUPS = (
-    ("Pakistan job boards", ("linkedin.com/jobs", "pk.indeed.com", "bebee.com/pk", "jobs.taraki.co", "brightspyre.com", "rozee.pk", "mustakbil.com", "nstp.pk")),
-    ("Pakistan official employers", ("careers.un.org", "undp.org", "unicef.org", "who.int", "unwomen.org", "wfp.org", "iom.int", "unops.org", "jazz.com.pk", "zong.com.pk", "telenor.com.pk", "ptcl.com.pk", "nayatel.com", "akdn.org")),
-    ("Development jobs", ("reliefweb.int", "devex.com")),
-    ("Remote-only ATS supplement", ("greenhouse.io", "lever.co", "ashbyhq.com")),
-)
-
-ROLE_QUERIES = (
-    '"Business Analyst"',
-    '"Product Analyst" OR "Product Owner"',
-    '"Digital Transformation" OR "Process Improvement"',
-    '"Strategic Communications" OR "Communications Manager" OR "Knowledge Management"',
-)
+ATOM = "{http://www.w3.org/2005/Atom}"
 
 
-def brave_search(query: str, api_key: str) -> list[dict]:
-    """Return web results from Brave Search without scraping the target websites."""
-    endpoint = "https://api.search.brave.com/res/v1/web/search?" + urllib.parse.urlencode({"q": query, "count": 10, "freshness": "pm"})
-    request = urllib.request.Request(endpoint, headers={"Accept": "application/json", "X-Subscription-Token": api_key})
+def configured_feeds() -> list[dict[str, str]]:
+    raw = os.environ.get("JOB_SOURCE_FEEDS", "[]")
+    feeds = json.loads(raw)
+    if not isinstance(feeds, list) or not all(isinstance(feed, dict) and feed.get("name") and feed.get("url") for feed in feeds):
+        raise ValueError("JOB_SOURCE_FEEDS must be a JSON list of objects with name and url")
+    return feeds
+
+
+def text(element: ET.Element | None, tag: str) -> str:
+    value = element.findtext(tag) if element is not None else None
+    return value.strip() if value else ""
+
+
+def parse_feed(name: str, payload: bytes) -> list[dict]:
+    root = ET.fromstring(payload)
+    items = root.findall("./channel/item") or root.findall(f"{ATOM}entry")
+    output = []
+    for item in items:
+        link = text(item, "link") or next((candidate.get("href", "") for candidate in item.findall(f"{ATOM}link") if candidate.get("href")), "")
+        output.append({
+            "title": text(item, "title") or text(item, f"{ATOM}title"),
+            "url": link,
+            "description": text(item, "description") or text(item, f"{ATOM}summary") or text(item, f"{ATOM}content"),
+            "source": name,
+            "discovered_at": datetime.now(timezone.utc).isoformat(),
+            "verification_status": "pending",
+            "included_in_digest": False,
+        })
+    return output
+
+
+def fetch_feed(feed: dict[str, str]) -> list[dict]:
+    request = urllib.request.Request(feed["url"], headers={"User-Agent": "JobSearchDigestBot/1.0"})
     with urllib.request.urlopen(request, timeout=30) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    return payload.get("web", {}).get("results", [])
-
-
-def source_query(domain: str, role_query: str, group: str) -> str:
-    location = "Pakistan OR Islamabad" if group != "Remote-only ATS supplement" else '"remote"'
-    return f"site:{domain} ({role_query}) ({location}) (job OR careers OR vacancy)"
-
-
-def collect(api_key: str) -> list[dict]:
-    seen, leads = set(), []
-    for group, domains in SOURCE_GROUPS:
-        for domain in domains:
-            for role in ROLE_QUERIES:
-                for result in brave_search(source_query(domain, role, group), api_key):
-                    url = result.get("url")
-                    if not url or url in seen:
-                        continue
-                    seen.add(url)
-                    leads.append({
-                        "title": result.get("title", "Untitled listing"),
-                        "url": url,
-                        "description": result.get("description", ""),
-                        "source_domain": domain,
-                        "source_group": group,
-                        "discovered_at": datetime.now(timezone.utc).isoformat(),
-                        "verification_status": "pending",
-                        "included_in_digest": False,
-                    })
-    return leads
+        return parse_feed(feed["name"], response.read())
 
 
 def main() -> None:
-    api_key = os.environ.get("BRAVE_SEARCH_API_KEY")
-    if not api_key:
-        raise RuntimeError("Set BRAVE_SEARCH_API_KEY as a GitHub Actions secret")
     DATA.mkdir(exist_ok=True)
-    leads = collect(api_key)
-    (DATA / "candidate-leads.json").write_text(json.dumps(leads, indent=2), encoding="utf-8")
-    print(f"Collected {len(leads)} candidate leads for verification.")
+    feeds = configured_feeds()
+    leads, errors = [], []
+    for feed in feeds:
+        try:
+            leads.extend(fetch_feed(feed))
+        except Exception as error:
+            errors.append({"source": feed["name"], "error": str(error)})
+    unique = {lead["url"]: lead for lead in leads if lead["url"]}
+    (DATA / "candidate-leads.json").write_text(json.dumps(list(unique.values()), indent=2), encoding="utf-8")
+    (DATA / "collection-state.json").write_text(json.dumps({"feeds": len(feeds), "leads": len(unique), "errors": errors}, indent=2), encoding="utf-8")
+    if errors:
+        raise RuntimeError(f"One or more source integrations failed: {[error['source'] for error in errors]}")
+    print(f"Collected {len(unique)} candidate leads from {len(feeds)} approved feeds.")
 
 
 if __name__ == "__main__":
