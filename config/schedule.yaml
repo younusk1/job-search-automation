@@ -1,9 +1,9 @@
 version: 1
 timezone: Asia/Karachi
 schedule:
-  kind: azure_timer_trigger
-  cron: "0 0 8 * * 3"
-  description: Run once every Wednesday at 08:00 Asia/Karachi; configure Azure timezone support or convert to matching UTC.
+  kind: github_actions_schedule
+  cron: "0 3 * * 3"
+  description: Run once every Wednesday at 08:00 Asia/Karachi (03:00 UTC).
 execution:
   pipeline: [discovery, intelligence, summary, email]
   execution_mode: sequential
@@ -12,5 +12,5 @@ execution:
   loop_after_completion: false
 completion:
   success_condition: email_provider_confirms_delivery
-  on_success: mark_run_complete_until_next_scheduled_wednesday
+  on_success: workflow ends until next scheduled Wednesday
   state_file: data/run-state.json

@@ -5,7 +5,7 @@ One curated weekly digest matching Business Analysis/Product and Strategic Commu
 
 ## Weekly execution
 ```text
-Azure Timer Trigger (Wednesday morning, Asia/Karachi)
+GitHub Actions schedule (Wednesday morning, Asia/Karachi)
   -> Discovery -> Intelligence -> Summary -> Email -> Mark run complete -> Terminate
 ```
 The timer is the only recurring process: there are no agent loops, background workers, or repeated checks during the week.
@@ -25,7 +25,7 @@ The timer is the only recurring process: there are no agent loops, background wo
 - Official pages are primary links; boards are secondary mirrors.
 
 ## Completion and failure
-Provider-confirmed email delivery writes a completed run state, ends the Azure invocation, and keeps the pipeline dormant until next Wednesday. A failure records failed state and returns an error; it must not poll or run through the week. Future retry policies must be bounded to the same invocation.
+Provider-confirmed email delivery writes a completed run state, ends the GitHub Actions run, and keeps the pipeline dormant until next Wednesday. A failure records failed state and returns an error; it must not poll or run through the week. Future retry policies must be bounded to the same run.
 
-## Azure boundary
-Implement one Timer-trigger entry point under `azure/function_app/`. Keep Resend keys and email addresses in Azure Key Vault or Function App settings; never commit them.
+## GitHub Actions boundary
+Implement one scheduled workflow under `.github/workflows/`. Keep Resend keys and email addresses in GitHub Actions repository secrets; never commit them.
