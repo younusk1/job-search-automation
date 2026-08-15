@@ -1,16 +1,19 @@
 version: 1
 timezone: Asia/Karachi
 schedule:
-  kind: azure_timer_trigger
-  cron: "0 0 8 * * 3"
-  description: Run once every Wednesday at 08:00 Asia/Karachi; configure Azure timezone support or convert to matching UTC.
+  kind: timer_trigger
+  trigger: single_wednesday_morning_run
+  cron: "0 3 * * 3"
+  description: Run exactly once each Wednesday at 08:00 Asia/Karachi (03:00 UTC), then terminate until the next scheduled Wednesday.
 execution:
-  pipeline: [discovery, intelligence, summary, email]
+  pipeline: [discovery, ranking, summary, email]
   execution_mode: sequential
   weekly_runs: 1
   polling: disabled
   loop_after_completion: false
+  no_repeated_weekly_execution: true
 completion:
   success_condition: email_provider_confirms_delivery
-  on_success: mark_run_complete_until_next_scheduled_wednesday
+  on_success: mark_run_complete_until_next_wednesday
   state_file: data/run-state.json
+  completion_message: A successful email marks the run complete; no further checks or loops occur until the next scheduled Wednesday.
