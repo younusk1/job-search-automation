@@ -18,6 +18,24 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - name: Validate required GitHub configuration
+        shell: bash
+        env:
+          JOB_SOURCE_FEEDS: ${{ vars.JOB_SOURCE_FEEDS }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          JOB_DIGEST_TO: ${{ secrets.JOB_DIGEST_TO }}
+          JOB_DIGEST_FROM: ${{ secrets.JOB_DIGEST_FROM }}
+        run: |
+          missing=()
+          [ -n "${JOB_SOURCE_FEEDS:-}" ] || missing+=("JOB_SOURCE_FEEDS")
+          [ -n "${RESEND_API_KEY:-}" ] || missing+=("RESEND_API_KEY")
+          [ -n "${JOB_DIGEST_TO:-}" ] || missing+=("JOB_DIGEST_TO")
+          [ -n "${JOB_DIGEST_FROM:-}" ] || missing+=("JOB_DIGEST_FROM")
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Skipping weekly digest: missing required GitHub configuration: ${missing[*]}"
+            exit 0
+          fi
       - name: Collect Pakistan-first candidate leads
         env:
           JOB_SOURCE_FEEDS: ${{ vars.JOB_SOURCE_FEEDS }}
