@@ -32,9 +32,16 @@ jobs:
           [ -n "${JOB_DIGEST_TO:-}" ] || missing+=("JOB_DIGEST_TO")
           [ -n "${JOB_DIGEST_FROM:-}" ] || missing+=("JOB_DIGEST_FROM")
 
+          echo "GitHub configuration check:"
+          echo "- JOB_SOURCE_FEEDS: ${JOB_SOURCE_FEEDS:+set}"
+          echo "- RESEND_API_KEY: ${RESEND_API_KEY:+set}"
+          echo "- JOB_DIGEST_TO: ${JOB_DIGEST_TO:+set}"
+          echo "- JOB_DIGEST_FROM: ${JOB_DIGEST_FROM:+set}"
+
           if [ ${#missing[@]} -gt 0 ]; then
-            echo "Skipping weekly digest: missing required GitHub configuration: ${missing[*]}"
-            exit 0
+            echo "Missing required GitHub configuration: ${missing[*]}"
+            echo "Add the repository variable JOB_SOURCE_FEEDS and secrets RESEND_API_KEY, JOB_DIGEST_TO, and JOB_DIGEST_FROM, then rerun the workflow."
+            exit 1
           fi
       - name: Collect Pakistan-first candidate leads
         env:
