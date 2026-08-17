@@ -21,8 +21,13 @@ ATOM = "{http://www.w3.org/2005/Atom}"
 
 
 def configured_feeds() -> list[dict[str, str]]:
-    raw = os.environ.get("JOB_SOURCE_FEEDS", "[]")
-    feeds = json.loads(raw)
+    raw = os.environ.get("JOB_SOURCE_FEEDS", "").strip()
+    if not raw:
+        return []
+    try:
+        feeds = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError("JOB_SOURCE_FEEDS must be valid JSON for a list of objects with name and url") from exc
     if not isinstance(feeds, list) or not all(isinstance(feed, dict) and feed.get("name") and feed.get("url") for feed in feeds):
         raise ValueError("JOB_SOURCE_FEEDS must be a JSON list of objects with name and url")
     return feeds
