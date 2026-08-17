@@ -65,18 +65,33 @@ def fetch_feed(feed: dict[str, str]) -> list[dict]:
 def main() -> None:
     DATA.mkdir(exist_ok=True)
     feeds = configured_feeds()
-    leads, errors = [], []
+    leads, errors, successes = [], [], []
     for feed in feeds:
         try:
-            leads.extend(fetch_feed(feed))
+            items = fetch_feed(feed)
+            leads.extend(items)
+            successes.append({"source": feed["name"], "count": len(items)})
+            print(f"Feed succeeded: {feed['name']} ({len(items)} items)")
         except Exception as error:
             errors.append({"source": feed["name"], "error": str(error)})
+            print(f"Warning: source integration failed for {feed['name']}: {error}")
     unique = {lead["url"]: lead for lead in leads if lead["url"]}
+    summary = {
+        "feeds": len(feeds),
+        "leads": len(unique),
+        "successes": successes,
+        "errors": errors,
+    }
     (DATA / "candidate-leads.json").write_text(json.dumps(list(unique.values()), indent=2), encoding="utf-8")
-    (DATA / "collection-state.json").write_text(json.dumps({"feeds": len(feeds), "leads": len(unique), "errors": errors}, indent=2), encoding="utf-8")
+    (DATA / "collection-state.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    if successes:
+        working = ", ".join(f"{item['source']} ({item['count']})" for item in successes)
+        print(f"Working feeds: {working}")
     if errors:
-        raise RuntimeError(f"One or more source integrations failed: {[error['source'] for error in errors]}")
-    print(f"Collected {len(unique)} candidate leads from {len(feeds)} approved feeds.")
+        failed = ", ".join(f"{item['source']}" for item in errors)
+        print(f"Failed feeds: {failed}")
+    total = len(successes) + len(errors)
+    print(f"Collection complete: {len(unique)} valid leads from {len(successes)} working feeds and {len(errors)} failed feeds out of {total} configured sources.")
 
 
 if __name__ == "__main__":
