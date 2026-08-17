@@ -32,7 +32,7 @@ jobs:
         run: python job_digest.py
       - name: Upload generated digest
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: weekly-job-digest
           path: data/
