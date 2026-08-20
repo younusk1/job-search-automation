@@ -6,7 +6,7 @@ Add these repository secrets before enabling it: `RESEND_API_KEY`, `JOB_DIGEST_T
 
 `collect_jobs.py` is the direct source-integration collector. It consumes only source-approved RSS or Atom feeds, does not scrape job sites, and never treats a feed item as verified. Configure the non-secret `JOB_SOURCE_FEEDS` GitHub Actions variable as a JSON list, for example `[{"name":"BrightSpyre","url":"https://your-approved-feed-url"}]`. BrightSpyre publicly offers job-alert RSS feeds; add other sources only when they provide a feed or grant API access. It writes pending leads to `data/candidate-leads.json`.
 
-Current search sources include: LinkedIn, Indeed Pakistan, BeBee, Taraki, BrightSpyre, Rozee.pk, Mustakbil, NSTP, ReliefWeb, Devex, UN agencies, embassies/high commissions in Pakistan, Pakistani telecoms, AKDN organizations, major NGOs/INGOs, Greenhouse, Lever, and Ashby.
+Current search sources include: LinkedIn, BeBee, Taraki, BrightSpyre, Mustakbil, NSTP, ReliefWeb, Devex, UN agencies, embassies/high commissions in Pakistan, Pakistani telecoms, AKDN organizations, major NGOs/INGOs, Greenhouse, Lever, and Ashby.
 
 User preferences and eligibility rules:
 

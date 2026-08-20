@@ -1,4 +1,4 @@
-# Weekly curated job search — 2026-08-17
+# Weekly curated job search — 2026-08-20
 
 Discovered: 0 | Rejected: 0 | Included: 0
 

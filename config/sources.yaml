@@ -11,12 +11,6 @@ sources:
       enabled: true,
     }
   - {
-      name: Indeed Pakistan,
-      url: "https://pk.indeed.com/",
-      category: job_board,
-      enabled: true,
-    }
-  - {
       name: BeBee,
       url: "https://www.bebee.com/",
       category: job_board,
@@ -31,12 +25,6 @@ sources:
   - {
       name: BrightSpyre,
       url: "https://www.brightspyre.com/",
-      category: job_board,
-      enabled: true,
-    }
-  - {
-      name: Rozee.pk,
-      url: "https://www.rozee.pk/",
       category: job_board,
       enabled: true,
     }
